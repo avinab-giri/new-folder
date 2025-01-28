@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Code Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .editor-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .code-editor {
+            width: 50%;
+            background: #1e1e1e;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .editor-section {
+            flex: 1;
+            margin-bottom: 10px;
+        }
+
+        .editor-section h3 {
+            margin-bottom: 5px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            font-family: monospace;
+            background: #2d2d2d;
+            color: #fff;
+            border: none;
+            resize: none;
+            outline: none;
+            border-radius: 5px;
+        }
+
+        .output-container {
+            width: 50%;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .output-container h3 {
+            margin-bottom: 5px;
+        }
+
+        iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #fff;
+        }
+
+        .suggestion-box {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            background-color: #515151;
+            border: 1px solid #060606;
+            width: 200px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            font-family: monospace;
+            background-color: #515151;
+        }
+
+        .suggestion-item:hover {
+            background-color: #2b2b2b !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="editor-container">
+        <div class="code-editor">
+            <div class="editor-section">
+                <h3>HTML</h3>
+                <textarea id="html-code" placeholder="Write HTML here..."></textarea>
+                <div id="suggestionBox" class="suggestion-box"></div>
+            </div>
+            <div class="editor-section">
+                <h3>CSS</h3>
+                <textarea id="css-code" placeholder="Write CSS here..."></textarea>
+            </div>
+            <div class="editor-section">
+                <h3>JavaScript</h3>
+                <textarea id="js-code" placeholder="Write JavaScript here..."></textarea>
+            </div>
+        </div>
+        <div class="output-container">
+            <h3>Live Preview</h3>
+            <iframe id="output"></iframe>
+        </div>
+    </div>
+    <script>
+        const htmlCode = document.getElementById("html-code");
+        const cssCode = document.getElementById("css-code");
+        const jsCode = document.getElementById("js-code");
+        const outputFrame = document.getElementById("output");
+
+        const suggestionBox = document.getElementById("suggestionBox");
+
+
+        function updateOutput() {
+            const html = htmlCode.value;
+            const css = `<style>${cssCode.value}</style>`;
+
+            const output = `
+                            <!DOCTYPE html>
+                            <html lang="en">
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>Live Preview</title>
+                                <style>
+                                body {
+                                    margin: 0;
+                                    padding: 0;
+                                    font-family: Arial, sans-serif;
+                                }
+                                </style>
+                                ${css}
+                            </head>
+                            <body>
+                                ${html}
+                            </body>
+                            </html>
+                            `;
+
+            outputFrame.contentDocument.open();
+            outputFrame.contentDocument.write(output);
+            outputFrame.contentDocument.close();
+            
+            try {
+                const iframeWindow = outputFrame.contentWindow;
+                iframeWindow.eval(jsCode.value);
+            } catch (error) {
+                console.error("JavaScript Error: ", error);
+            }
+        }
+
+        htmlCode.addEventListener("input", updateOutput);
+        cssCode.addEventListener("input", updateOutput);
+        jsCode.addEventListener("input", updateOutput);
+
+        const tagSuggestions = {
+            h: ["h1", "h2", "h3", "h4", "h5", "h6"],
+            img: ['img src="" alt=""'],
+            p: ["p"],
+            a: ["a href=\"\""],
+            div: ["div"]
+        };
+
+        let currentSuggestions = [];
+        let selectedIndex = 0;
+
+        htmlCode.addEventListener("input", showSuggestions);
+
+        function showSuggestions() {
+            const cursorPosition = htmlCode.selectionStart;
+            const textBeforeCursor = htmlCode.value.slice(0, cursorPosition);
+            const lastWord = textBeforeCursor.split(/\s+/).pop(); 
+
+            suggestionBox.innerHTML = "";
+            suggestionBox.style.display = "none";
+
+            if (tagSuggestions[lastWord]) {
+                currentSuggestions = tagSuggestions[lastWord];
+                currentSuggestions.forEach((tag, index) => {
+                    const suggestionItem = document.createElement("div");
+                    suggestionItem.className = "suggestion-item";
+                    suggestionItem.textContent = `<${tag}>`;
+                    suggestionItem.dataset.index = index;
+                    suggestionItem.addEventListener("click", () => applySuggestion(tag));
+                    suggestionBox.appendChild(suggestionItem);
+                });
+
+                suggestionBox.style.display = "block";
+                selectedIndex = 0; 
+                highlightSuggestion();
+            }
+        }
+
+        function highlightSuggestion() {
+            const items = document.querySelectorAll(".suggestion-item");
+            items.forEach((item, index) => {
+                if (index === selectedIndex) {
+                    item.style.backgroundColor = "#060606";
+                } else {
+                    item.style.backgroundColor = "#515151";
+                }
+            });
+        }
+
+        function applySuggestion(tag) {
+            const cursorPosition = htmlCode.selectionStart;
+            const textBeforeCursor = htmlCode.value.slice(0, cursorPosition);
+            const textAfterCursor = htmlCode.value.slice(cursorPosition);
+            const lastWord = textBeforeCursor.split(/\s+/).pop();
+
+            
+            let fullTag = `<${tag}>`;
+            if (!tag.includes("img")) {
+                fullTag += `</${tag}>`; 
+            }
+
+            const updatedText = textBeforeCursor.slice(0, -lastWord.length) + fullTag;
+            htmlCode.value = updatedText + textAfterCursor;
+
+            const cursorOffset = !tag.includes("img") ? fullTag.indexOf(">") + 1 : fullTag.length;
+            htmlCode.selectionStart = updatedText.length - textAfterCursor.length - cursorOffset;
+            htmlCode.selectionEnd = htmlCode.selectionStart;
+
+            suggestionBox.innerHTML = "";
+            suggestionBox.style.display = "none";
+            updateOutput();
+        }
+
+
+    </script>
+</body>
+
+</html>
