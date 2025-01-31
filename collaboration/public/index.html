@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Collaboration Tool</title>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f4f4f4;
+        }
+        textarea {
+            width: 80%;
+            height: 400px;
+            font-size: 16px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+
+    <textarea id="editor" placeholder="Start typing..."></textarea>
+
+    <script>
+        const socket = io("http://localhost:3000");
+        const editor = document.getElementById("editor");
+
+        socket.on("load-document", (content) => {
+            editor.value = content;
+        });
+
+        editor.addEventListener("input", () => {
+            const content = editor.value;
+            socket.emit("edit-document", content);
+        });
+
+        socket.on("update-document", (content) => {
+            editor.value = content;
+        });
+    </script>
+
+</body>
+</html>
