@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Chat</title>
+</head>
+
+<body>
+    <h1>Ask Gemini AI</h1>
+    <input type="text" id="userInput" placeholder="Enter your prompt">
+    <button onclick="askGemini()">Send</button>
+    <p id="response"></p>
+
+    <script>
+        async function askGemini() {
+            const prompt = document.getElementById("userInput").value;
+            const responseElement = document.getElementById("response");
+            responseElement.textContent = "Loading...";
+
+            try {
+                const response = await fetch("http://localhost:3000/ask", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt })
+                });
+                const data = await response.json();
+                responseElement.textContent = data.candidates[0]?.content.parts[0]?.text || "No response received.";
+
+            } catch (error) {
+                responseElement.textContent = "Error fetching response.";
+            }
+        }
+
+        function generateHtmlContent(content) {
+            let lines = content.split("\n");
+            let html = "";
+
+            lines.forEach(line => {
+                if (line.startsWith("**")) {
+                    let heading = line.replace(/\*\*/g, ""); // Remove ** from headings
+                    html += `<h2>${heading}</h2>\n`;
+                } else if (line.startsWith("*")) {
+                    let listItem = line.replace(/\*/g, "").trim(); // Remove * from list items
+                    html += `<li><strong>${listItem.split(":")[0]}:</strong> ${listItem.split(":")[1] || ""}</li>\n`;
+                } else if (line.trim() !== "") {
+                    html += `<p>${line}</p>\n`;
+                }
+            });
+
+            return `<h1>Ways to Help Me</h1>\n` + html;
+        }
+
+        // Example usage:
+        let content = `**Ways to Help Me:**
+
+**1. Provide Detailed Instructions and Examples:**
+* Give clear step-by-step instructions: Provide specific examples.
+* Use images, diagrams, or videos: Visual aids can help illustrate points.
+
+**2. Use Clear and Concise Language:**
+* Avoid technical jargon: Keep explanations simple.
+* Break down tasks: Make learning more manageable.
+
+**3. Offer Feedback and Support:**
+* Provide constructive feedback: Help improve understanding.
+* Encourage and assist: Support learning and growth.
+
+**4. Be Patient and Understanding:**
+* Allow time to learn: Everyone has their own pace.
+* Answer questions: Clarify concepts when needed.
+
+**5. Provide Access to Relevant Information:**
+* Share documentation: Tutorials and resources are helpful.
+* Ensure access to tools: Make sure resources are available.
+
+**6. Respect My Boundaries:**
+* Allow uninterrupted time: Let me focus on tasks.
+* Respect breaks: Everyone needs personal space.
+
+**7. Offer Recognition and Appreciation:**
+* Acknowledge accomplishments: Provide positive feedback.
+* Show appreciation: Recognize contributions.
+
+**8. Foster a Positive and Supportive Environment:**
+* Encourage collaboration: Promote teamwork.
+* Support open communication: Create a learning-friendly space.
+
+**9. Be Flexible and Adapt:**
+* Recognize progress isn't linear: Learning takes time.
+* Adjust instructions as needed: Adapt to different needs.
+
+**10. Engage with the User Community:**
+* Join forums and communities: Connect with others for help.
+* Encourage participation: Learning from others is valuable.`;
+
+        document.body.innerHTML = generateHtmlContent(content);
+
+    </script>
+</body>
+
+</html>
