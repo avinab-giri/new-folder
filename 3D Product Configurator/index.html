@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Product Configurator</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+    <!-- Include Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Include OrbitControls from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div class="controls">
+        <button id="colorButton">Change Color</button>
+    </div>
+    <script>
+        // 1. Set up scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. Add a simple 3D model (cube)
+        const geometry = new THREE.BoxGeometry();
+        const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 }); // Using MeshStandardMaterial for lighting effects
+        const cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+
+        // 3. Add OrbitControls for user interaction (rotate, zoom, etc.)
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);  // Correctly initializing OrbitControls
+
+        // 4. Set camera position
+        camera.position.z = 5;
+
+        // 5. Add lighting to the scene (important for MeshStandardMaterial)
+        const ambientLight = new THREE.AmbientLight(0x404040, 1); // Ambient light to softly illuminate the scene
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Directional light to highlight objects
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+
+        // 6. Animation loop to render the scene and animate the model
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate the cube for visual effect
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+
+            controls.update();  // Update controls for OrbitControls
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize for responsiveness
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // 7. Change color when the button is clicked
+        const button = document.getElementById('colorButton');
+        button.addEventListener('click', () => {
+            // Random color change
+            const randomColor = Math.floor(Math.random() * 16777215); // Generate random color
+            cube.material.color.setHex(randomColor); // Apply new color to cube
+        });
+    </script>
+</body>
+</html>

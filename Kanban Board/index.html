@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            background: #f4f4f4;
+        }
+
+        .kanban {
+            display: flex;
+            gap: 20px;
+            margin-top: 50px;
+        }
+
+        .column {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            width: 250px;
+            min-height: 400px;
+        }
+
+        .task-list {
+            min-height: 200px;
+            padding: 10px;
+            border: 1px dashed #ccc;
+        }
+
+        .task {
+            background: lightblue;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: grab;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="kanban">
+        <div class="column" id="todo">
+            <h2>To Do</h2>
+            <div class="task-list" data-status="todo"></div>
+            <button class="add-task">+ Add Task</button>
+        </div>
+        <div class="column" id="in-progress">
+            <h2>In Progress</h2>
+            <div class="task-list" data-status="in-progress"></div>
+        </div>
+        <div class="column" id="done">
+            <h2>Done</h2>
+            <div class="task-list" data-status="done"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const columns = document.querySelectorAll(".task-list");
+
+            columns.forEach(column => {
+                new Sortable(column, {
+                    group: "kanban",
+                    animation: 150,
+                    onEnd: function (evt) {
+                        const taskId = evt.item.dataset.id;
+                        const newStatus = evt.to.dataset.status;
+                        updateTaskStatus(taskId, newStatus);
+                    }
+                });
+            });
+
+            function updateTaskStatus(taskId, status) {
+                console.log(`Task ${taskId} moved to ${status}`);
+                // Send updated status to backend (e.g., via fetch API)
+            }
+        });
+
+    </script>
+</body>
+
+</html>

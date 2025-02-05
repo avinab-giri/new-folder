@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom CSS Framework Builder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Custom CSS Framework Builder</h2>
+        <label><input type="checkbox" id="grid"> Include Grid System</label><br>
+        <label><input type="checkbox" id="buttons"> Include Buttons</label><br>
+        <label><input type="checkbox" id="typography"> Include Typography</label><br>
+        <button class="btn" onclick="generateCSS()">Generate CSS</button>
+        <h3>Generated CSS:</h3>
+        <textarea id="output" readonly></textarea>
+        <button class="btn" onclick="downloadCSS()">Download CSS</button>
+    </div>
+
+    <script>
+        function generateCSS() {
+            let css = "/* Custom CSS Framework */\n";
+
+            if (document.getElementById("grid").checked) {
+                css += "/* Grid System */\n.container { width: 100%; max-width: 1200px; margin: auto; }\n.row { display: flex; }\n.col { flex: 1; padding: 10px; }\n\n";
+            }
+
+            if (document.getElementById("buttons").checked) {
+                css += "/* Buttons */\n.btn { padding: 10px 15px; border: none; cursor: pointer; }\n.btn-primary { background: blue; color: white; }\n.btn-secondary { background: gray; color: white; }\n\n";
+            }
+
+            if (document.getElementById("typography").checked) {
+                css += "/* Typography */\nbody { font-family: Arial, sans-serif; line-height: 1.6; }\nh1, h2, h3 { font-weight: bold; }\n\n";
+            }
+
+            document.getElementById("output").value = css;
+        }
+
+        function downloadCSS() {
+            const cssContent = document.getElementById("output").value;
+            if (!cssContent) {
+                alert("Please generate CSS first!");
+                return;
+            }
+            const blob = new Blob([cssContent], { type: "text/css" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "custom-framework.css";
+            link.click();
+        }
+    </script>
+</body>
+</html>

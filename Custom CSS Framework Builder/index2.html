@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom CSS Framework Builder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview {
+            margin-top: 20px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+        }
+
+        .flex-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .flex-item {
+            background-color: #f1f1f1;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .grid-item {
+            background-color: #f1f1f1;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        label,
+        select,
+        input {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>CSS Framework Builder</h1>
+
+    <form id="cssForm">
+        <label for="component">Choose a Component to Customize:</label>
+        <select id="component" onchange="toggleOptions()">
+            <option value="none">None</option>
+            <option value="button">Button</option>
+            <option value="flex">Flex Layout</option>
+            <option value="grid">Grid Layout</option>
+        </select><br><br>
+
+        <!-- Button Customization -->
+        <div id="buttonOptions" class="option-group" style="display: none;">
+            <h3>Button Design</h3>
+            <label>Primary Color:</label>
+            <input type="color" id="primaryColor" value="#3498db"><br>
+
+            <label>Secondary Color:</label>
+            <input type="color" id="secondaryColor" value="#2ecc71"><br>
+
+            <label>Border Radius (px):</label>
+            <input type="number" id="borderRadius" value="5"><br>
+        </div>
+
+        <!-- Flex Layout Customization -->
+        <div id="flexOptions" class="option-group" style="display: none;">
+            <h3>Flex Layout</h3>
+            <label>Flex Direction:</label>
+            <select id="flexDirection">
+                <option value="row">Row</option>
+                <option value="column">Column</option>
+            </select><br>
+
+            <label>Gap (px):</label>
+            <input type="number" id="flexGap" value="10"><br>
+
+            <label>Number of Boxes:</label>
+            <input type="number" id="flexItems" value="2" min="1"><br>
+        </div>
+
+        <!-- Grid Layout Customization -->
+        <div id="gridOptions" class="option-group" style="display: none;">
+            <h3>Grid Layout</h3>
+            <label>Grid Columns:</label>
+            <select id="gridColumns">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+            </select><br><br>
+        </div>
+
+        <button type="button" onclick="generateCSS()">Generate CSS</button>
+        <button type="button" onclick="downloadCSS()">Download CSS</button>
+    </form>
+
+    <h2>Preview</h2>
+
+    <!-- Preview Section -->
+    <div class="preview">
+        <h3>Button Preview</h3>
+        <button class="btn">Button Example</button>
+
+        <h3>Flex Layout Preview</h3>
+        <div class="flex-container">
+            <div class="flex-item">Box 1</div>
+            <div class="flex-item">Box 2</div>
+        </div>
+
+        <h3>Grid Layout Preview</h3>
+        <div class="grid-container">
+            <div class="grid-item">Card 1</div>
+            <div class="grid-item">Card 2</div>
+            <div class="grid-item">Card 3</div>
+        </div>
+    </div>
+
+    <style id="customStyles"></style>
+
+    <script>
+        // Toggle the visibility of options based on the selected component
+        function toggleOptions() {
+            const selectedComponent = document.getElementById('component').value;
+
+            // Hide all option groups
+            const optionGroups = document.querySelectorAll('.option-group');
+            optionGroups.forEach(group => {
+                group.style.display = 'none';
+            });
+
+            // Show only the relevant options
+            if (selectedComponent === 'button') {
+                document.getElementById('buttonOptions').style.display = 'block';
+            } else if (selectedComponent === 'flex') {
+                document.getElementById('flexOptions').style.display = 'block';
+            } else if (selectedComponent === 'grid') {
+                document.getElementById('gridOptions').style.display = 'block';
+            }
+        }
+
+        // Generate the CSS based on user selections
+        function generateCSS() {
+            const selectedComponent = document.getElementById('component').value;
+            let cssContent = '';
+
+            if (selectedComponent === 'button') {
+                const primaryColor = document.getElementById('primaryColor').value;
+                const secondaryColor = document.getElementById('secondaryColor').value;
+                const borderRadius = document.getElementById('borderRadius').value;
+
+                cssContent = `
+            .btn {
+                background-color: ${primaryColor};
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: ${borderRadius}px;
+                cursor: pointer;
+            }
+
+            .btn:hover {
+                background-color: ${secondaryColor};
+            }
+        `;
+            } else if (selectedComponent === 'flex') {
+                const flexDirection = document.getElementById('flexDirection').value;
+                const flexGap = document.getElementById('flexGap').value;
+                const flexItems = document.getElementById('flexItems').value;
+
+                cssContent = `
+            .flex-container {
+                display: flex;
+                flex-direction: ${flexDirection};
+                gap: ${flexGap}px;
+            }
+
+            .flex-item {
+                background-color: #f1f1f1;
+                padding: 20px;
+                border-radius: 5px;
+                text-align: center;
+                flex: 1;
+            }
+
+            .flex-container .flex-item:nth-child(n+${flexItems + 1}) {
+                display: none;
+            }
+        `;
+            } else if (selectedComponent === 'grid') {
+                const gridColumns = document.getElementById('gridColumns').value;
+
+                cssContent = `
+            .grid-container {
+                display: grid;
+                grid-template-columns: repeat(${gridColumns}, 1fr);
+                gap: 10px;
+            }
+
+            .grid-item {
+                background-color: #f1f1f1;
+                padding: 20px;
+                border-radius: 5px;
+                text-align: center;
+            }
+        `;
+            }
+
+            // Apply the generated CSS to the preview
+            document.getElementById('customStyles').textContent = cssContent;
+        }
+
+        // Download the generated CSS file
+        function downloadCSS() {
+            const cssContent = document.getElementById('customStyles').textContent;
+            const blob = new Blob([cssContent], { type: 'text/css' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'custom-framework.css';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+    </script>
+</body>
+
+</html>
