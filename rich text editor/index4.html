@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Shape Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .toolbar {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        .toolbar button, .toolbar input, .toolbar select {
+            margin: 5px;
+            padding: 5px;
+        }
+        .editor {
+            border: 1px solid #ccc;
+            min-height: 400px;
+            width: 100%;
+            margin-top: 5px;
+            background: white;
+            position: relative;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        .resize-handle {
+            fill: red;
+            cursor: nwse-resize;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <button onclick="addSVGShape('rectangle')">Add Rectangle</button>
+        <button onclick="addSVGShape('circle')">Add Circle</button>
+        <button onclick="addSVGShape('triangle')">Add Triangle</button>
+        <button onclick="addText()">Add Text</button>
+
+        <label>Border:</label>
+        <input type="color" id="borderColor" onchange="updateBorderColor(this.value)">
+        
+        <label>Fill:</label>
+        <input type="color" id="fillColor" onchange="updateFillColor(this.value)">
+
+        <label>Text:</label>
+        <input type="text" id="textInput" oninput="updateText(this.value)">
+        <button onclick="toggleBold()">Bold</button>
+        <button onclick="toggleItalic()">Italic</button>
+        <label>Size:</label>
+        <select id="fontSize" onchange="updateFontSize(this.value)">
+            <option value="16">16px</option>
+            <option value="20">20px</option>
+            <option value="24">24px</option>
+            <option value="30">30px</option>
+        </select>
+    </div>
+
+    <div class="editor" id="editor">
+        <svg id="svgCanvas"></svg>
+    </div>
+
+    <script>
+        let selectedElement = null;
+        let selectedText = null;
+        let startX, startY, startWidth, startHeight;
+
+        function addSVGShape(type) {
+            let svgCanvas = document.getElementById("svgCanvas");
+            let shape;
+
+            if (type === "rectangle") {
+                shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                shape.setAttribute("x", 50);
+                shape.setAttribute("y", 50);
+                shape.setAttribute("width", 100);
+                shape.setAttribute("height", 60);
+                shape.setAttribute("fill", "lightblue");
+            } else if (type === "circle") {
+                shape = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                shape.setAttribute("cx", 80);
+                shape.setAttribute("cy", 80);
+                shape.setAttribute("r", 40);
+                shape.setAttribute("fill", "lightcoral");
+            } else if (type === "triangle") {
+                shape = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                shape.setAttribute("points", "100,30 70,90 130,90");
+                shape.setAttribute("fill", "lightgreen");
+            }
+
+            shape.setAttribute("stroke", "black");
+            shape.setAttribute("stroke-width", "2");
+            shape.classList.add("draggable");
+            shape.addEventListener("mousedown", startDrag);
+            shape.addEventListener("click", () => selectElement(shape));
+
+            svgCanvas.appendChild(shape);
+        }
+
+        function addText() {
+            let svgCanvas = document.getElementById("svgCanvas");
+            let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+
+            text.setAttribute("x", 100);
+            text.setAttribute("y", 100);
+            text.setAttribute("fill", "black");
+            text.setAttribute("font-size", "16px");
+            text.textContent = "New Text";
+
+            text.addEventListener("mousedown", startDrag);
+            text.addEventListener("click", () => selectText(text));
+
+            svgCanvas.appendChild(text);
+        }
+
+        function selectElement(element) {
+            selectedElement = element;
+            selectedText = null;
+        }
+
+        function selectText(text) {
+            selectedText = text;
+            selectedElement = null;
+            document.getElementById("textInput").value = text.textContent;
+        }
+
+        function updateBorderColor(color) {
+            if (selectedElement) selectedElement.setAttribute("stroke", color);
+        }
+
+        function updateFillColor(color) {
+            if (selectedElement) selectedElement.setAttribute("fill", color);
+        }
+
+        function updateText(value) {
+            if (selectedText) selectedText.textContent = value;
+        }
+
+        function toggleBold() {
+            if (selectedText) {
+                let weight = selectedText.getAttribute("font-weight") === "bold" ? "normal" : "bold";
+                selectedText.setAttribute("font-weight", weight);
+            }
+        }
+
+        function toggleItalic() {
+            if (selectedText) {
+                let style = selectedText.getAttribute("font-style") === "italic" ? "normal" : "italic";
+                selectedText.setAttribute("font-style", style);
+            }
+        }
+
+        function updateFontSize(size) {
+            if (selectedText) selectedText.setAttribute("font-size", size + "px");
+        }
+
+        function startDrag(event) {
+            if (event.target.classList.contains("resize-handle")) return;
+            selectedElement = event.target;
+            startX = event.clientX;
+            startY = event.clientY;
+
+            document.addEventListener("mousemove", dragElement);
+            document.addEventListener("mouseup", stopDrag);
+        }
+
+        function dragElement(event) {
+            if (!selectedElement) return;
+
+            let dx = event.clientX - startX;
+            let dy = event.clientY - startY;
+            startX = event.clientX;
+            startY = event.clientY;
+
+            if (selectedElement.tagName === "rect") {
+                let x = parseFloat(selectedElement.getAttribute("x")) + dx;
+                let y = parseFloat(selectedElement.getAttribute("y")) + dy;
+                selectedElement.setAttribute("x", x);
+                selectedElement.setAttribute("y", y);
+            } else if (selectedElement.tagName === "circle") {
+                let cx = parseFloat(selectedElement.getAttribute("cx")) + dx;
+                let cy = parseFloat(selectedElement.getAttribute("cy")) + dy;
+                selectedElement.setAttribute("cx", cx);
+                selectedElement.setAttribute("cy", cy);
+            } else if (selectedElement.tagName === "text") {
+                let x = parseFloat(selectedElement.getAttribute("x")) + dx;
+                let y = parseFloat(selectedElement.getAttribute("y")) + dy;
+                selectedElement.setAttribute("x", x);
+                selectedElement.setAttribute("y", y);
+            }
+        }
+
+        function stopDrag() {
+            document.removeEventListener("mousemove", dragElement);
+            document.removeEventListener("mouseup", stopDrag);
+        }
+    </script>
+
+</body>
+</html>

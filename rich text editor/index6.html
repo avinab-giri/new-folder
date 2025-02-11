@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text Editor with Shapes</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .toolbar button, .toolbar input { margin: 5px; padding: 8px; cursor: pointer; }
+        #editor-container { width: 100%; height: 400px; border: 1px solid #ddd; padding: 10px; overflow: auto; position: relative; }
+        .shape { position: absolute; cursor: move; border: 2px solid black; }
+        .textarea { width: 100%; height: 150px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h2>Rich Text Editor (Pure JavaScript - No Libraries)</h2>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <button onclick="formatText('bold')"><b>B</b></button>
+        <button onclick="formatText('italic')"><i>I</i></button>
+        <button onclick="formatText('h1')">H1</button>
+        <button onclick="formatText('h2')">H2</button>
+        <button onclick="formatText('h3')">H3</button>
+        <input type="file" id="imageUpload" accept="image/*">
+        <button onclick="addShape('rect')">Rectangle</button>
+        <button onclick="addShape('circle')">Circle</button>
+        <button onclick="addShape('triangle')">Triangle</button>
+        <input type="color" id="colorPicker" onchange="changeColor(this.value)">
+        <button onclick="deleteSelected()">Delete</button>
+    </div>
+
+    <!-- Editor Container -->
+    <div id="editor-container" contenteditable="true"></div>
+
+    <!-- Submit Button -->
+    <button onclick="getEditorContent()">Submit</button>
+
+    <h3>Final HTML Output:</h3>
+    <textarea id="output" class="textarea"></textarea>
+
+    <script>
+        let selectedElement = null;
+
+        // Text Formatting
+        function formatText(command) {
+            if (command === "h1" || command === "h2" || command === "h3") {
+                document.execCommand("formatBlock", false, command);
+            } else {
+                document.execCommand(command, false, null);
+            }
+        }
+
+        // Image Upload
+        document.getElementById("imageUpload").addEventListener("change", function(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.style.maxWidth = "100%";
+                    img.style.cursor = "move";
+                    img.draggable = true;
+                    img.classList.add("shape");
+                    enableDrag(img);
+                    document.getElementById("editor-container").appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Add Shapes
+        function addShape(type) {
+            let shape = document.createElement("div");
+            shape.classList.add("shape");
+            shape.style.width = "100px";
+            shape.style.height = "100px";
+            shape.style.backgroundColor = "blue";
+            shape.style.top = "50px";
+            shape.style.left = "50px";
+
+            if (type === "circle") {
+                shape.style.borderRadius = "50%";
+            } else if (type === "triangle") {
+                shape.style.width = "0";
+                shape.style.height = "0";
+                shape.style.borderLeft = "50px solid transparent";
+                shape.style.borderRight = "50px solid transparent";
+                shape.style.borderBottom = "100px solid blue";
+                shape.style.background = "none";
+            }
+
+            enableDrag(shape);
+            document.getElementById("editor-container").appendChild(shape);
+        }
+
+        // Enable Dragging for Shapes and Images
+        function enableDrag(element) {
+            let offsetX, offsetY, isDragging = false;
+
+            element.addEventListener("mousedown", function(e) {
+                isDragging = true;
+                offsetX = e.clientX - element.offsetLeft;
+                offsetY = e.clientY - element.offsetTop;
+                selectedElement = element;
+            });
+
+            document.addEventListener("mousemove", function(e) {
+                if (isDragging) {
+                    element.style.left = (e.clientX - offsetX) + "px";
+                    element.style.top = (e.clientY - offsetY) + "px";
+                }
+            });
+
+            document.addEventListener("mouseup", function() {
+                isDragging = false;
+            });
+        }
+
+        // Change Shape Color
+        function changeColor(color) {
+            if (selectedElement) {
+                if (selectedElement.classList.contains("shape")) {
+                    if (selectedElement.style.borderBottom) {
+                        selectedElement.style.borderBottom = "100px solid " + color;
+                    } else {
+                        selectedElement.style.backgroundColor = color;
+                    }
+                }
+            }
+        }
+
+        // Delete Selected Shape
+        function deleteSelected() {
+            if (selectedElement) {
+                selectedElement.remove();
+                selectedElement = null;
+            }
+        }
+
+        // Capture All Content
+        function getEditorContent() {
+            let content = document.getElementById("editor-container").innerHTML;
+            document.getElementById("output").value = content;
+        }
+    </script>
+
+</body>
+</html>

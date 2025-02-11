@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .toolbar {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        .toolbar button, .toolbar select, .toolbar input {
+            margin: 5px;
+            padding: 5px;
+        }
+        .editor {
+            border: 1px solid #ccc;
+            min-height: 200px;
+            padding: 10px;
+            margin-top: 5px;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <!-- Header -->
+        <select onchange="formatText('formatBlock', this.value)">
+            <option value="p">Paragraph</option>
+            <option value="h1">H1</option>
+            <option value="h2">H2</option>
+            <option value="h3">H3</option>
+        </select>
+
+        <!-- Formatting -->
+        <button onclick="formatText('bold')">Bold</button>
+        <button onclick="formatText('italic')">Italic</button>
+        
+        <!-- Text & Background Color -->
+        <input type="color" onchange="formatText('foreColor', this.value)">
+        <input type="color" onchange="formatText('hiliteColor', this.value)">
+
+        <!-- Insert Image -->
+        <input type="file" id="imageUpload" accept="image/*">
+        <button onclick="insertImage()">Insert Image</button>
+    </div>
+
+    <div contenteditable="true" class="editor" id="editor">
+        Start writing here...
+    </div>
+
+    <script>
+        function formatText(command, value = null) {
+            document.execCommand(command, false, value);
+        }
+
+        function insertImage() {
+            let fileInput = document.getElementById("imageUpload");
+            let file = fileInput.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    formatText("insertImage", e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+
+</body>
+</html>

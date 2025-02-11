@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text Editor with Math Symbols</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .toolbar button, .toolbar select, .toolbar input { margin: 5px; padding: 8px; cursor: pointer; }
+        #editor-container { width: 100%; height: 400px; border: 1px solid #ddd; padding: 10px; overflow: auto; position: relative; }
+        .textarea { width: 100%; height: 150px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h2>Rich Text Editor with Math Symbols</h2>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <button onclick="formatText('bold')"><b>B</b></button>
+        <button onclick="formatText('italic')"><i>I</i></button>
+        <select id="mathSymbols" onchange="insertMathSymbol()">
+            <option value="">Math Symbols</option>
+            <option value="&plus;">Addition (+)</option>
+            <option value="&minus;">Subtraction (−)</option>
+            <option value="&times;">Multiplication (×)</option>
+            <option value="&divide;">Division (÷)</option>
+            <option value="&equals;">Equal (=)</option>
+            <option value="&ne;">Not Equal (≠)</option>
+            <option value="&le;">Less or Equal (≤)</option>
+            <option value="&ge;">Greater or Equal (≥)</option>
+            <option value="&sum;">Summation (∑)</option>
+            <option value="&int;">Integral (∫)</option>
+            <option value="&pi;">Pi (π)</option>
+            <option value="&radic;">Square Root (√)</option>
+        </select>
+    </div>
+
+    <!-- Editor Container -->
+    <div id="editor-container" contenteditable="true"></div>
+
+    <!-- Submit Button -->
+    <button onclick="getEditorContent()">Submit</button>
+
+    <h3>Final HTML Output:</h3>
+    <textarea id="output" class="textarea"></textarea>
+
+    <script>
+        // Text Formatting
+        function formatText(command) {
+            document.execCommand(command, false, null);
+        }
+
+        // Insert Math Symbol with Correct Formatting
+        function insertMathSymbol() {
+            let symbol = document.getElementById("mathSymbols").value;
+            if (symbol) {
+                let isBold = document.queryCommandState("bold");
+                let isItalic = document.queryCommandState("italic");
+
+                let symbolHTML = symbol; // Default: Insert plain symbol
+                
+                if (isBold && isItalic) {
+                    symbolHTML = `<b><i>${symbol}</i></b>`;
+                } else if (isBold) {
+                    symbolHTML = `<b>${symbol}</b>`;
+                } else if (isItalic) {
+                    symbolHTML = `<i>${symbol}</i>`;
+                }
+
+                // Insert into the editor at cursor position
+                document.execCommand("insertHTML", false, symbolHTML);
+
+                // Reset dropdown
+                document.getElementById("mathSymbols").value = "";
+            }
+        }
+
+        // Capture All Content
+        function getEditorContent() {
+            let content = document.getElementById("editor-container").innerHTML;
+            document.getElementById("output").value = content;
+        }
+    </script>
+
+</body>
+</html>
