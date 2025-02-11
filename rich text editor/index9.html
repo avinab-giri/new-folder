@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text Editor via CDN</title>
+    <script>
+        class RichTextEditor {
+            constructor(textareaSelector) {
+                this.textarea = document.querySelector(textareaSelector);
+                if (!this.textarea) {
+                    console.error("Textarea not found!");
+                    return;
+                }
+                this.createEditor();
+            }
+
+            createEditor() {
+                // Create editor container
+                this.editorContainer = document.createElement("div");
+                this.editorContainer.contentEditable = true;
+                this.editorContainer.style.width = "100%";
+                this.editorContainer.style.height = "300px";
+                this.editorContainer.style.border = "1px solid #ccc";
+                this.editorContainer.style.padding = "10px";
+                this.editorContainer.style.overflow = "auto";
+
+                // Create toolbar
+                this.toolbar = document.createElement("div");
+                this.toolbar.innerHTML = `
+            <button onclick="document.execCommand('bold', false, '')"><b>B</b></button>
+            <button onclick="document.execCommand('italic', false, '')"><i>I</i></button>
+            <button onclick="document.execCommand('formatBlock', false, 'h1')">H1</button>
+            <button onclick="document.execCommand('formatBlock', false, 'h2')">H2</button>
+            <button onclick="document.execCommand('formatBlock', false, 'h3')">H3</button>
+            <input type="file" id="imageUpload" accept="image/*">
+            <button onclick="richEditor.addShape('rect')">Rectangle</button>
+            <button onclick="richEditor.addShape('circle')">Circle</button>
+            <button onclick="richEditor.addShape('triangle')">Triangle</button>
+            <button onclick="richEditor.saveContent()">Save</button>
+        `;
+
+                // Append toolbar & editor to the page
+                this.textarea.style.display = "none"; // Hide original textarea
+                this.textarea.parentNode.insertBefore(this.toolbar, this.textarea);
+                this.textarea.parentNode.insertBefore(this.editorContainer, this.textarea);
+
+                // Add Image Upload Listener
+                document.getElementById("imageUpload").addEventListener("change", (event) => this.addImage(event));
+
+                this.selectedElement = null;
+            }
+
+            addImage(event) {
+                let file = event.target.files[0];
+                if (file) {
+                    let reader = new FileReader();
+                    reader.onload = (e) => {
+                        let img = document.createElement("img");
+                        img.src = e.target.result;
+                        img.style.width = "150px";
+                        img.style.height = "150px";
+                        img.style.position = "absolute";
+                        img.style.cursor = "grab";
+                        img.draggable = false;
+                        img.classList.add("draggable");
+                        this.editorContainer.appendChild(img);
+                        this.enableDrag(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            addShape(type) {
+                let shape = document.createElement("div");
+                shape.style.width = "100px";
+                shape.style.height = "100px";
+                shape.style.position = "absolute";
+                shape.style.cursor = "grab";
+                shape.style.border = "2px solid black";
+                shape.classList.add("draggable");
+
+                if (type === "circle") {
+                    shape.style.borderRadius = "50%";
+                    shape.style.backgroundColor = "blue";
+                } else if (type === "triangle") {
+                    shape.style.clipPath = "polygon(50% 0%, 100% 100%, 0% 100%)";
+                    shape.style.backgroundColor = "blue";
+                } else {
+                    shape.style.backgroundColor = "red";
+                }
+
+                this.editorContainer.appendChild(shape);
+                this.enableDrag(shape);
+            }
+
+            enableDrag(element) {
+                let offsetX, offsetY, isDragging = false;
+
+                element.addEventListener("mousedown", (e) => {
+                    isDragging = true;
+                    offsetX = e.clientX - element.offsetLeft;
+                    offsetY = e.clientY - element.offsetTop;
+                    this.selectedElement = element;
+                    e.preventDefault();
+                });
+
+                document.addEventListener("mousemove", (e) => {
+                    if (isDragging && this.selectedElement) {
+                        this.selectedElement.style.left = (e.clientX - offsetX) + "px";
+                        this.selectedElement.style.top = (e.clientY - offsetY) + "px";
+                    }
+                });
+
+                document.addEventListener("mouseup", () => {
+                    isDragging = false;
+                    this.selectedElement = null;
+                });
+            }
+
+            saveContent() {
+                this.textarea.value = this.editorContainer.innerHTML;
+                alert("Content Saved!");
+            }
+        }
+
+        // Global Function to Initialize
+        function createEditor(textareaSelector) {
+            window.richEditor = new RichTextEditor(textareaSelector);
+        }
+
+    </script>
+</head>
+
+<body>
+
+    <h2>Rich Text Editor (Auto-Generated)</h2>
+
+    <textarea id="myEditor"></textarea>
+
+    <script>
+        createEditor("#myEditor"); 
+    </script>
+
+</body>
+
+</html>

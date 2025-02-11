@@ -52,6 +52,8 @@
 
     <script>
         let selectedElement = null;
+        let offsetX = 0, offsetY = 0;
+        let isDragging = false;
 
         // Text Formatting
         function formatText(command) {
@@ -62,7 +64,7 @@
             }
         }
 
-        // Image Upload (Smooth Drag Fixed)
+        // Image Upload (Now supports multiple images)
         document.getElementById("imageUpload").addEventListener("change", function(event) {
             let file = event.target.files[0];
             if (file) {
@@ -77,8 +79,8 @@
                     img.style.position = "absolute";
                     img.style.top = "50px";
                     img.style.left = "50px";
-                    enableDrag(img);  // Enable smooth dragging
                     document.getElementById("editor-container").appendChild(img);
+                    enableDrag(img); // Attach drag handlers
                 };
                 reader.readAsDataURL(file);
             }
@@ -94,6 +96,7 @@
             shape.style.top = "50px";
             shape.style.left = "50px";
             shape.style.border = "2px solid black";
+            shape.style.position = "absolute";
 
             if (type === "circle") {
                 shape.style.borderRadius = "50%";
@@ -104,14 +107,12 @@
                 shape.style.height = "100px";
             }
 
-            enableDrag(shape);
             document.getElementById("editor-container").appendChild(shape);
+            enableDrag(shape);
         }
 
-        // Enable Smooth Dragging for Shapes and Images
+        // Enable Dragging for Shapes & Images
         function enableDrag(element) {
-            let offsetX, offsetY, isDragging = false;
-
             element.addEventListener("mousedown", function(e) {
                 isDragging = true;
                 offsetX = e.clientX - element.offsetLeft;
@@ -119,22 +120,26 @@
                 selectedElement = element;
                 showControls();
                 element.style.cursor = "grabbing";
-            });
-
-            document.addEventListener("mousemove", function(e) {
-                if (isDragging) {
-                    requestAnimationFrame(() => {
-                        element.style.left = (e.clientX - offsetX) + "px";
-                        element.style.top = (e.clientY - offsetY) + "px";
-                    });
-                }
-            });
-
-            document.addEventListener("mouseup", function() {
-                isDragging = false;
-                element.style.cursor = "grab";
+                e.preventDefault(); // Prevent default drag behavior for images
             });
         }
+
+        // Global Dragging Events (Applied Once)
+        document.addEventListener("mousemove", function(e) {
+            if (isDragging && selectedElement) {
+                requestAnimationFrame(() => {
+                    selectedElement.style.left = (e.clientX - offsetX) + "px";
+                    selectedElement.style.top = (e.clientY - offsetY) + "px";
+                });
+            }
+        });
+
+        document.addEventListener("mouseup", function() {
+            isDragging = false;
+            if (selectedElement) {
+                selectedElement.style.cursor = "grab";
+            }
+        });
 
         // Show Control Panel
         function showControls() {
