@@ -157,7 +157,7 @@
             outputFrame.contentDocument.open();
             outputFrame.contentDocument.write(output);
             outputFrame.contentDocument.close();
-            
+
             try {
                 const iframeWindow = outputFrame.contentWindow;
                 iframeWindow.eval(jsCode.value);
@@ -172,9 +172,10 @@
 
         const tagSuggestions = {
             h: ["h1", "h2", "h3", "h4", "h5", "h6"],
+            h1: ['h1'],
             img: ['img src="" alt=""'],
             p: ["p"],
-            a: ["a href=\"\""],
+            a: ['a href=\"\"'],
             div: ["div"]
         };
 
@@ -184,9 +185,9 @@
         htmlCode.addEventListener("input", showSuggestions);
 
         function showSuggestions() {
-            const cursorPosition = htmlCode.selectionStart;
-            const textBeforeCursor = htmlCode.value.slice(0, cursorPosition);
-            const lastWord = textBeforeCursor.split(/\s+/).pop(); 
+
+            const textBeforeCursor = htmlCode.value;
+            const lastWord = textBeforeCursor.split(/\s+/).pop();
 
             suggestionBox.innerHTML = "";
             suggestionBox.style.display = "none";
@@ -203,41 +204,45 @@
                 });
 
                 suggestionBox.style.display = "block";
-                selectedIndex = 0; 
-                highlightSuggestion();
             }
         }
 
-        function highlightSuggestion() {
-            const items = document.querySelectorAll(".suggestion-item");
-            items.forEach((item, index) => {
-                if (index === selectedIndex) {
-                    item.style.backgroundColor = "#060606";
-                } else {
-                    item.style.backgroundColor = "#515151";
-                }
-            });
-        }
+        // function applySuggestion(tag) {
+        //     const cursorPosition = htmlCode.selectionStart;
+        //     const textBeforeCursor = htmlCode.value.slice(0, cursorPosition);
+        //     const textAfterCursor = htmlCode.value.slice(cursorPosition);
+
+        //     const lastWord = textBeforeCursor.split(/\s+/).pop();
+
+
+
+        //     let fullTag = `<${tag}>`;
+        //     if (!tag.includes("img")) {
+        //         fullTag += `</${tag}>`;
+        //     }
+
+        //     const updatedText = textBeforeCursor.slice(0, -lastWord.length) + fullTag;
+        //     htmlCode.value = updatedText + textAfterCursor;
+
+        //     const cursorOffset = !tag.includes("img") ? fullTag.indexOf(">") + 1 : fullTag.length;
+        //     htmlCode.selectionStart = updatedText.length - textAfterCursor.length - cursorOffset;
+        //     htmlCode.selectionEnd = htmlCode.selectionStart;
+
+        //     suggestionBox.innerHTML = "";
+        //     suggestionBox.style.display = "none";
+        //     updateOutput();
+        // }
 
         function applySuggestion(tag) {
-            const cursorPosition = htmlCode.selectionStart;
-            const textBeforeCursor = htmlCode.value.slice(0, cursorPosition);
-            const textAfterCursor = htmlCode.value.slice(cursorPosition);
-            const lastWord = textBeforeCursor.split(/\s+/).pop();
+            const tagText = htmlCode.value;
 
+            const lastWord = tagText.split(/\s+/).pop(); // remove
+
+            const fullTag = `<${tag}></${tag}>`;
+
+            const updatedText = tagText.slice(0, -lastWord.length) + fullTag;
+            htmlCode.value = updatedText;
             
-            let fullTag = `<${tag}>`;
-            if (!tag.includes("img")) {
-                fullTag += `</${tag}>`; 
-            }
-
-            const updatedText = textBeforeCursor.slice(0, -lastWord.length) + fullTag;
-            htmlCode.value = updatedText + textAfterCursor;
-
-            const cursorOffset = !tag.includes("img") ? fullTag.indexOf(">") + 1 : fullTag.length;
-            htmlCode.selectionStart = updatedText.length - textAfterCursor.length - cursorOffset;
-            htmlCode.selectionEnd = htmlCode.selectionStart;
-
             suggestionBox.innerHTML = "";
             suggestionBox.style.display = "none";
             updateOutput();
@@ -248,3 +253,5 @@
 </body>
 
 </html>
+
+h

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f4f4f4;
+        }
+
+        .chat-container {
+            width: 400px;
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        #chat-box {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #fafafa;
+        }
+
+        input,
+        button,
+        select {
+            padding: 10px;
+            margin: 5px;
+            width: 80%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background: blue;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <div class="chat-container">
+        <h2>Chat Room</h2>
+        <select id="room">
+            <option value="general">General</option>
+            <option value="tech">Tech</option>
+            <option value="gaming">Gaming</option>
+        </select>
+        <div id="chat-box"></div>
+        <input type="text" id="message" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        const socket = io();
+        const roomSelect = document.getElementById("room");
+        const chatBox = document.getElementById("chat-box");
+        const messageInput = document.getElementById("message");
+
+        let currentRoom = roomSelect.value;
+        socket.emit("joinRoom", currentRoom);
+
+        roomSelect.addEventListener("change", () => {
+            currentRoom = roomSelect.value;
+            socket.emit("joinRoom", currentRoom);
+            chatBox.innerHTML = ""; 
+        });
+
+        socket.on("message", (message) => {
+            const messageElement = document.createElement("div");
+            messageElement.textContent = message;
+            chatBox.appendChild(messageElement);
+        });
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                socket.emit("chatMessage", { room: currentRoom, message });
+                messageInput.value = "";
+            }
+        }
+    </script>
+</body>
+
+</html>
