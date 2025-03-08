@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .kanban-board {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px;
+        }
+
+        .column {
+            width: 30%;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        .tasks {
+            min-height: 150px;
+            border: 1px dashed #ccc;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .task {
+            background-color: #e0f7fa;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 3px;
+            cursor: move;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Kanban Board</h1>
+    <div class="kanban-board">
+        <div class="column" id="todo">
+            <h2>To Do</h2>
+            <div class="tasks" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <button onclick="addTask('todo')">Add Task</button>
+        </div>
+        <div class="column" id="in-progress">
+            <h2>In Progress</h2>
+            <div class="tasks" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <button onclick="addTask('in-progress')">Add Task</button>
+        </div>
+        <div class="column" id="done">
+            <h2>Done</h2>
+            <div class="tasks" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <button onclick="addTask('done')">Add Task</button>
+        </div>
+    </div>
+
+    <script>
+        // Function to allow dropping of tasks
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        // Function to handle dragging of tasks
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.id);
+        }
+
+        // Function to handle dropping of tasks
+        function drop(event) {
+            event.preventDefault();
+            const taskId = event.dataTransfer.getData("text");
+            const taskElement = document.getElementById(taskId);
+            event.target.appendChild(taskElement);
+
+            // Save the updated state to local storage
+            saveState();
+        }
+
+        // Function to add a new task
+        function addTask(columnId) {
+            const taskText = prompt("Enter task description:");
+            if (!taskText) return;
+
+            const taskElement = document.createElement("div");
+            taskElement.className = "task";
+            taskElement.textContent = taskText;
+            taskElement.setAttribute("draggable", true);
+            taskElement.id = `task-${Date.now()}`;
+
+            taskElement.addEventListener("dragstart", drag);
+
+            document.querySelector(`#${columnId} .tasks`).appendChild(taskElement);
+
+            // Save the updated state to local storage
+            saveState();
+        }
+
+        // Function to save the current state to local storage
+        function saveState() {
+            const columns = document.querySelectorAll(".column");
+            const state = {};
+
+            columns.forEach((column) => {
+                const columnId = column.id;
+                const tasks = Array.from(column.querySelector(".tasks").children).map(
+                    (task) => ({ id: task.id, text: task.textContent })
+                );
+                state[columnId] = tasks;
+            });
+
+            localStorage.setItem("kanbanState", JSON.stringify(state));
+        }
+
+        // Function to load the saved state from local storage
+        function loadState() {
+            const savedState = localStorage.getItem("kanbanState");
+            if (!savedState) return;
+
+            const state = JSON.parse(savedState);
+
+            for (const [columnId, tasks] of Object.entries(state)) {
+                const columnTasks = document.querySelector(`#${columnId} .tasks`);
+                columnTasks.innerHTML = ""; // Clear existing tasks
+
+                tasks.forEach((task) => {
+                    const taskElement = document.createElement("div");
+                    taskElement.className = "task";
+                    taskElement.textContent = task.text;
+                    taskElement.setAttribute("draggable", true);
+                    taskElement.id = task.id;
+
+                    taskElement.addEventListener("dragstart", drag);
+
+                    columnTasks.appendChild(taskElement);
+                });
+            }
+        }
+
+        // Load the saved state when the page loads
+        document.addEventListener("DOMContentLoaded", loadState);
+    </script>
+</body>
+
+</html>

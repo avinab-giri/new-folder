@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Collaboration Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        textarea {
+            width: 80%;
+            height: 80%;
+            font-size: 16px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+    <textarea id="editor" placeholder="Start typing..."></textarea>
+
+    <script>
+        const editor = document.getElementById('editor');
+
+        // Connect to the WebSocket server
+        const ws = new WebSocket(`ws://${window.location.host}`);
+
+        // Send changes to the server
+        editor.addEventListener('input', () => {
+            ws.send(editor.value);
+        });
+
+        // Receive updates from the server
+        ws.onmessage = (event) => {
+            const newText = event.data;
+            if (newText !== editor.value) {
+                editor.value = newText; // Update the editor content
+            }
+        };
+
+        // Handle connection errors
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+    </script>
+</body>
+</html>

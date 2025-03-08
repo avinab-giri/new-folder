@@ -74,22 +74,27 @@
         let currentRoom = roomSelect.value;
         socket.emit("joinRoom", currentRoom);
 
+        // When user changes the room
         roomSelect.addEventListener("change", () => {
             currentRoom = roomSelect.value;
             socket.emit("joinRoom", currentRoom);
-            chatBox.innerHTML = ""; 
+            chatBox.innerHTML = ""; // Clear previous messages when switching rooms
         });
 
+        // Listen for incoming messages
         socket.on("message", (message) => {
-            const messageElement = document.createElement("div");
-            messageElement.textContent = message;
-            chatBox.appendChild(messageElement);
+            if (message.room == currentRoom) {
+                const messageElement = document.createElement("div");
+                messageElement.textContent = message.message;
+                chatBox.appendChild(messageElement);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
         });
 
         function sendMessage() {
             const message = messageInput.value.trim();
             if (message) {
-                socket.emit("chatMessage", { room: currentRoom, message });
+                socket.emit("chatMessage", { message });
                 messageInput.value = "";
             }
         }
