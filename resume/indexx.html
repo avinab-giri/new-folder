@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Resume Builder</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .form-section {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .preview-section {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1, h2 {
+            color: #2c3e50;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-generate {
+            background-color: #27ae60;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .btn-generate:hover {
+            background-color: #219653;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .add-btn {
+            background-color: #95a5a6;
+            margin-top: 10px;
+        }
+        
+        .remove-btn {
+            background-color: #e74c3c;
+            margin-left: 10px;
+        }
+        
+        .resume-preview {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: white;
+            min-height: 100%;
+        }
+        
+        .resume-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .resume-header h2 {
+            margin: 5px 0;
+            color: #2c3e50;
+        }
+        
+        .resume-header p {
+            margin: 5px 0;
+            color: #7f8c8d;
+        }
+        
+        .resume-section {
+            margin-bottom: 20px;
+        }
+        
+        .resume-section h3 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .experience-item, .education-item {
+            margin-bottom: 15px;
+        }
+        
+        .experience-item h4, .education-item h4 {
+            margin-bottom: 5px;
+        }
+        
+        .experience-date, .education-date {
+            font-style: italic;
+            color: #7f8c8d;
+        }
+        
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .skill-tag {
+            background-color: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Resume Builder</h1>
+    
+    <div class="container">
+        <div class="form-section">
+            <div class="section">
+                <h2>Personal Information</h2>
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label for="profession">Profession</label>
+                    <input type="text" id="profession" placeholder="Software Engineer">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="john@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" placeholder="(123) 456-7890">
+                </div>
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <input type="text" id="address" placeholder="123 Main St, City, Country">
+                </div>
+                <div class="form-group">
+                    <label for="summary">Professional Summary</label>
+                    <textarea id="summary" placeholder="Brief summary of your professional background and skills"></textarea>
+                </div>
+            </div>
+            
+            <div class="section" id="experience-section">
+                <h2>Work Experience</h2>
+                <div class="experience-form">
+                    <div class="form-group">
+                        <label for="jobTitle">Job Title</label>
+                        <input type="text" class="jobTitle" placeholder="Senior Developer">
+                    </div>
+                    <div class="form-group">
+                        <label for="company">Company</label>
+                        <input type="text" class="company" placeholder="Tech Corp Inc.">
+                    </div>
+                    <div class="form-group">
+                        <label for="jobLocation">Location</label>
+                        <input type="text" class="jobLocation" placeholder="New York, NY">
+                    </div>
+                    <div class="form-group">
+                        <label for="jobStartDate">Start Date</label>
+                        <input type="text" class="jobStartDate" placeholder="June 2018">
+                    </div>
+                    <div class="form-group">
+                        <label for="jobEndDate">End Date</label>
+                        <input type="text" class="jobEndDate" placeholder="Present">
+                    </div>
+                    <div class="form-group">
+                        <label for="jobDescription">Description</label>
+                        <textarea class="jobDescription" placeholder="Describe your responsibilities and achievements"></textarea>
+                    </div>
+                    <button class="add-btn" onclick="addExperience()">Add Experience</button>
+                </div>
+                <div id="experience-list"></div>
+            </div>
+            
+            <div class="section" id="education-section">
+                <h2>Education</h2>
+                <div class="education-form">
+                    <div class="form-group">
+                        <label for="degree">Degree</label>
+                        <input type="text" class="degree" placeholder="Bachelor of Science">
+                    </div>
+                    <div class="form-group">
+                        <label for="field">Field of Study</label>
+                        <input type="text" class="field" placeholder="Computer Science">
+                    </div>
+                    <div class="form-group">
+                        <label for="institution">Institution</label>
+                        <input type="text" class="institution" placeholder="University of Technology">
+                    </div>
+                    <div class="form-group">
+                        <label for="educationLocation">Location</label>
+                        <input type="text" class="educationLocation" placeholder="Boston, MA">
+                    </div>
+                    <div class="form-group">
+                        <label for="educationStartDate">Start Date</label>
+                        <input type="text" class="educationStartDate" placeholder="September 2014">
+                    </div>
+                    <div class="form-group">
+                        <label for="educationEndDate">End Date</label>
+                        <input type="text" class="educationEndDate" placeholder="May 2018">
+                    </div>
+                    <button class="add-btn" onclick="addEducation()">Add Education</button>
+                </div>
+                <div id="education-list"></div>
+            </div>
+            
+            <div class="section">
+                <h2>Skills</h2>
+                <div class="form-group">
+                    <label for="skills">Skills (comma separated)</label>
+                    <textarea id="skills" placeholder="JavaScript, HTML, CSS, Project Management"></textarea>
+                </div>
+            </div>
+            
+            <button class="btn-generate" onclick="generatePDF()">Generate PDF Resume</button>
+        </div>
+        
+        <div class="preview-section">
+            <h2>Resume Preview</h2>
+            <div id="resume-preview" class="resume-preview">
+                <!-- Preview will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        // Store experiences and educations
+        let experiences = [];
+        let educations = [];
+        
+        // Update preview whenever inputs change
+        document.querySelectorAll('input, textarea').forEach(element => {
+            element.addEventListener('input', updatePreview);
+        });
+        
+        // Initial preview update
+        updatePreview();
+        
+        function updatePreview() {
+            const resumePreview = document.getElementById('resume-preview');
+            
+            // Get form values
+            const fullName = document.getElementById('fullName').value || 'Your Name';
+            const profession = document.getElementById('profession').value || 'Your Profession';
+            const email = document.getElementById('email').value || 'email@example.com';
+            const phone = document.getElementById('phone').value || '(123) 456-7890';
+            const address = document.getElementById('address').value || 'City, Country';
+            const summary = document.getElementById('summary').value || 'Professional summary goes here. Highlight your experience, skills, and achievements.';
+            const skillsText = document.getElementById('skills').value || 'Skill 1, Skill 2, Skill 3';
+            const skills = skillsText.split(',').map(skill => skill.trim()).filter(skill => skill);
+            
+            // Generate HTML for preview
+            let previewHTML = `
+                <div class="resume-header">
+                    <h2>${fullName}</h2>
+                    <p>${profession}</p>
+                    <p>${email} | ${phone} | ${address}</p>
+                </div>
+                
+                <div class="resume-section">
+                    <h3>Professional Summary</h3>
+                    <p>${summary}</p>
+                </div>
+            `;
+            
+            // Add experiences
+            if (experiences.length > 0) {
+                previewHTML += `<div class="resume-section"><h3>Work Experience</h3>`;
+                
+                experiences.forEach(exp => {
+                    previewHTML += `
+                        <div class="experience-item">
+                            <h4>${exp.jobTitle} at ${exp.company}</h4>
+                            <p class="experience-date">${exp.jobStartDate} - ${exp.jobEndDate} | ${exp.jobLocation}</p>
+                            <p>${exp.jobDescription}</p>
+                        </div>
+                    `;
+                });
+                
+                previewHTML += `</div>`;
+            }
+            
+            // Add education
+            if (educations.length > 0) {
+                previewHTML += `<div class="resume-section"><h3>Education</h3>`;
+                
+                educations.forEach(edu => {
+                    previewHTML += `
+                        <div class="education-item">
+                            <h4>${edu.degree} in ${edu.field}</h4>
+                            <p>${edu.institution}</p>
+                            <p class="education-date">${edu.educationStartDate} - ${edu.educationEndDate} | ${edu.educationLocation}</p>
+                        </div>
+                    `;
+                });
+                
+                previewHTML += `</div>`;
+            }
+            
+            // Add skills
+            if (skills.length > 0) {
+                previewHTML += `<div class="resume-section"><h3>Skills</h3><div class="skills-list">`;
+                
+                skills.forEach(skill => {
+                    previewHTML += `<span class="skill-tag">${skill}</span>`;
+                });
+                
+                previewHTML += `</div></div>`;
+            }
+            
+            resumePreview.innerHTML = previewHTML;
+        }
+        
+        function addExperience() {
+            const jobTitle = document.querySelector('.jobTitle').value;
+            const company = document.querySelector('.company').value;
+            const jobLocation = document.querySelector('.jobLocation').value;
+            const jobStartDate = document.querySelector('.jobStartDate').value;
+            const jobEndDate = document.querySelector('.jobEndDate').value;
+            const jobDescription = document.querySelector('.jobDescription').value;
+            
+            if (!jobTitle || !company) {
+                alert('Please fill at least Job Title and Company');
+                return;
+            }
+            
+            const newExperience = {
+                jobTitle,
+                company,
+                jobLocation,
+                jobStartDate,
+                jobEndDate,
+                jobDescription
+            };
+            
+            experiences.push(newExperience);
+            updateExperienceList();
+            updatePreview();
+            
+            // Clear form
+            document.querySelectorAll('.experience-form input, .experience-form textarea').forEach(el => {
+                el.value = '';
+            });
+        }
+        
+        function updateExperienceList() {
+            const experienceList = document.getElementById('experience-list');
+            experienceList.innerHTML = '';
+            
+            experiences.forEach((exp, index) => {
+                const expDiv = document.createElement('div');
+                expDiv.className = 'experience-item';
+                expDiv.innerHTML = `
+                    <h4>${exp.jobTitle} at ${exp.company}</h4>
+                    <p>${exp.jobStartDate} - ${exp.jobEndDate}</p>
+                    <button class="remove-btn" onclick="removeExperience(${index})">Remove</button>
+                `;
+                experienceList.appendChild(expDiv);
+            });
+        }
+        
+        function removeExperience(index) {
+            experiences.splice(index, 1);
+            updateExperienceList();
+            updatePreview();
+        }
+        
+        function addEducation() {
+            const degree = document.querySelector('.degree').value;
+            const field = document.querySelector('.field').value;
+            const institution = document.querySelector('.institution').value;
+            const educationLocation = document.querySelector('.educationLocation').value;
+            const educationStartDate = document.querySelector('.educationStartDate').value;
+            const educationEndDate = document.querySelector('.educationEndDate').value;
+            
+            if (!degree || !institution) {
+                alert('Please fill at least Degree and Institution');
+                return;
+            }
+            
+            const newEducation = {
+                degree,
+                field,
+                institution,
+                educationLocation,
+                educationStartDate,
+                educationEndDate
+            };
+            
+            educations.push(newEducation);
+            updateEducationList();
+            updatePreview();
+            
+            // Clear form
+            document.querySelectorAll('.education-form input').forEach(el => {
+                el.value = '';
+            });
+        }
+        
+        function updateEducationList() {
+            const educationList = document.getElementById('education-list');
+            educationList.innerHTML = '';
+            
+            educations.forEach((edu, index) => {
+                const eduDiv = document.createElement('div');
+                eduDiv.className = 'education-item';
+                eduDiv.innerHTML = `
+                    <h4>${edu.degree} in ${edu.field}</h4>
+                    <p>${edu.institution}</p>
+                    <p>${edu.educationStartDate} - ${edu.educationEndDate}</p>
+                    <button class="remove-btn" onclick="removeEducation(${index})">Remove</button>
+                `;
+                educationList.appendChild(eduDiv);
+            });
+        }
+        
+        function removeEducation(index) {
+            educations.splice(index, 1);
+            updateEducationList();
+            updatePreview();
+        }
+        
+        function generatePDF() {
+            // Create new PDF document
+            const doc = new jsPDF();
+            
+            // Get form values
+            const fullName = document.getElementById('fullName').value || 'Your Name';
+            const profession = document.getElementById('profession').value || 'Your Profession';
+            const email = document.getElementById('email').value || 'email@example.com';
+            const phone = document.getElementById('phone').value || '(123) 456-7890';
+            const address = document.getElementById('address').value || 'City, Country';
+            const summary = document.getElementById('summary').value || 'Professional summary goes here. Highlight your experience, skills, and achievements.';
+            const skillsText = document.getElementById('skills').value || 'Skill 1, Skill 2, Skill 3';
+            const skills = skillsText.split(',').map(skill => skill.trim()).filter(skill => skill);
+            
+            // Set document properties
+            doc.setProperties({
+                title: `${fullName} - Resume`,
+                subject: 'Professional Resume',
+                author: fullName,
+                keywords: 'resume, cv, professional',
+                creator: 'Interactive Resume Builder'
+            });
+            
+            // Add header
+            doc.setFontSize(22);
+            doc.setTextColor(40, 40, 40);
+            doc.text(fullName, 105, 20, { align: 'center' });
+            
+            doc.setFontSize(16);
+            doc.setTextColor(100, 100, 100);
+            doc.text(profession, 105, 28, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.setTextColor(150, 150, 150);
+            const contactInfo = `${email} | ${phone} | ${address}`;
+            doc.text(contactInfo, 105, 35, { align: 'center' });
+            
+            // Add line separator
+            doc.setDrawColor(200, 200, 200);
+            doc.line(20, 40, 190, 40);
+            
+            let yPosition = 50;
+            
+            // Add summary section
+            doc.setFontSize(14);
+            doc.setTextColor(40, 40, 40);
+            doc.text('Professional Summary', 20, yPosition);
+            
+            doc.setFontSize(11);
+            doc.setTextColor(80, 80, 80);
+            const splitSummary = doc.splitTextToSize(summary, 170);
+            doc.text(splitSummary, 20, yPosition + 7);
+            
+            yPosition += 7 + (splitSummary.length * 7);
+            yPosition += 10; // Add some space
+            
+            // Add experience section
+            if (experiences.length > 0) {
+                doc.setFontSize(14);
+                doc.setTextColor(40, 40, 40);
+                doc.text('Work Experience', 20, yPosition);
+                
+                yPosition += 7;
+                
+                experiences.forEach(exp => {
+                    doc.setFontSize(12);
+                    doc.setTextColor(50, 50, 50);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`${exp.jobTitle} at ${exp.company}`, 20, yPosition);
+                    
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`${exp.jobStartDate} - ${exp.jobEndDate} | ${exp.jobLocation}`, 20, yPosition + 5);
+                    
+                    doc.setFontSize(10);
+                    doc.setTextColor(80, 80, 80);
+                    const splitDesc = doc.splitTextToSize(exp.jobDescription, 170);
+                    doc.text(splitDesc, 20, yPosition + 12);
+                    
+                    yPosition += 12 + (splitDesc.length * 5);
+                    yPosition += 10; // Add some space between experiences
+                });
+            }
+            
+            // Add education section
+            if (educations.length > 0) {
+                doc.setFontSize(14);
+                doc.setTextColor(40, 40, 40);
+                doc.text('Education', 20, yPosition);
+                
+                yPosition += 7;
+                
+                educations.forEach(edu => {
+                    doc.setFontSize(12);
+                    doc.setTextColor(50, 50, 50);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`${edu.degree} in ${edu.field}`, 20, yPosition);
+                    
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(edu.institution, 20, yPosition + 5);
+                    
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`${edu.educationStartDate} - ${edu.educationEndDate} | ${edu.educationLocation}`, 20, yPosition + 10);
+                    
+                    yPosition += 15;
+                });
+                
+                yPosition += 5;
+            }
+            
+            // Add skills section
+            if (skills.length > 0) {
+                doc.setFontSize(14);
+                doc.setTextColor(40, 40, 40);
+                doc.text('Skills', 20, yPosition);
+                
+                yPosition += 7;
+                
+                doc.setFontSize(10);
+                doc.setTextColor(80, 80, 80);
+                
+                let xPos = 20;
+                skills.forEach(skill => {
+                    const skillWidth = doc.getTextWidth(skill) + 4;
+                    if (xPos + skillWidth > 190) {
+                        xPos = 20;
+                        yPosition += 7;
+                    }
+                    
+                    // Draw skill tag
+                    doc.setFillColor(52, 152, 219);
+                    doc.roundedRect(xPos, yPosition, skillWidth, 6, 1, 1, 'F');
+                    
+                    // Add skill text
+                    doc.setTextColor(255, 255, 255);
+                    doc.text(skill, xPos + 2, yPosition + 4);
+                    
+                    xPos += skillWidth + 4;
+                });
+                
+                yPosition += 12;
+            }
+            
+            // Save the PDF
+            doc.save(`${fullName.replace(/\s+/g, '_')}_Resume.pdf`);
+        }
+    </script>
+</body>
+</html>
