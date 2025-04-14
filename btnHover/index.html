@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f8f8f8;
+        }
+
+        .btn-container {
+            padding: 2rem;
+        }
+
+        .hover-btn {
+            --btn-color: #3b82f6;
+            --btn-width: 180px;
+            --btn-height: 56px;
+
+            position: relative;
+            width: var(--btn-width);
+            height: var(--btn-height);
+            border: none;
+            border-radius: var(--btn-height);
+            background: rgba(0, 0, 0, 0.1);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 24px;
+        }
+
+        .hover-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--btn-color);
+            border-radius: inherit;
+            z-index: 1;
+            transition: transform 0.4s ease;
+        }
+
+        .text {
+            position: relative;
+            z-index: 2;
+            transition: transform 0.4s ease;
+        }
+
+        .icon-wrapper {
+            position: relative;
+            width: 24px;
+            height: 24px;
+            margin-left: 12px;
+            z-index: 2;
+        }
+
+        .icon {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            fill: white;
+            transition: all 0.4s ease;
+        }
+
+        .icon-left {
+            left: 0;
+            transform: translateX(-200%);
+            opacity: 0;
+        }
+
+        .icon-right {
+            left: 0;
+        }
+
+        .hover-btn:hover::after {
+            transform: translateX(65%);
+        }
+
+        .hover-btn:hover .text {
+            transform: translateX(-10px);
+        }
+
+        .hover-btn:hover .icon-wrapper {
+            transform: translateX(10px);
+        }
+
+        .hover-btn:hover .icon-left {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .hover-btn:hover .icon-right {
+            transform: translateX(200%);
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="btn-container">
+        <button class="hover-btn">
+            <span class="text">Hover</span>
+            <div class="icon-wrapper">
+                <svg class="icon icon-left">
+                    <use xlink:href="#arrow-right"></use>
+                </svg>
+                <svg class="icon icon-right">
+                    <use xlink:href="#arrow-right"></use>
+                </svg>
+            </div>
+        </button>
+    </div>
+
+    <svg style="display: none;">
+        <symbol id="arrow-right" viewBox="0 0 20 10">
+            <path d="M14.84 0l-1.08 1.06 3.3 3.2H0v1.49h17.05l-3.3 3.2L14.84 10 20 5l-5.16-5z"></path>
+        </symbol>
+    </svg>
+</body>
+
+</html>
